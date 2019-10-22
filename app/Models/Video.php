@@ -20,7 +20,9 @@ class Video extends Model
         'year_launched',
         'opened',
         'rating',
-        'duration'
+        'duration',
+        'video_file',
+        'thumb_file'
     ];
 
     protected  $dates = ['deleted_at'];
@@ -35,7 +37,7 @@ class Video extends Model
 
     public $incrementing = false;
 
-    public static $fileFields = ['video_file'];
+    public static $fileFields = ['video_file', 'thumb_file'];
 
 
     public static function create(array $attributes = [])
@@ -56,8 +58,8 @@ class Video extends Model
         } catch (\Exception $e) {
 
            if(isset( $obj))  {
+               $obj->deleteFiles($files);
 
-               //excluir os arquivos de uploads
            }
 
             \DB::rollBack();
@@ -77,19 +79,19 @@ class Video extends Model
             static::handleRelations($this, $attributes);
            if($saved) {
                $this->uploadFiles($files);
-
-               //excluir os antigos
            }
             \DB::commit();
+
+           if($saved && count($files)) {
+
+               $this->deleteOldFiles();
+           }
 
             return $saved;
 
         } catch (\Exception $e) {
 
-            if(isset( $obj))  {
-
-                //excluir os arquivos de uploads
-            }
+           $this->deleteFiles($files);
 
             \DB::rollBack();
 
