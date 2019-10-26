@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Arr;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -171,35 +172,24 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
     public function testSaveWithoutFiles()
     {
 
-        $category = factory(Category::class)->create();
-        $genre = factory(Genre::class)->create();
-        $genre->categories()->sync($category->id);
-
+        $testData = Arr::except($this->sendData, ['categories_id', 'genres_id']);
         $data = [
 
             [
-                'send_data' => $this->sendData + [
-                        'categories_id' => [$category->id],
-                        'genres_id' => [$genre->id],
-                    ],
-                'test_data' => $this->sendData + ['opened' => false]
+                'send_data' => $this->sendData ,
+                'test_data' => $testData + ['opened' => false]
             ],
             [
                 'send_data' => $this->sendData + [
                         'opened' => true,
-                        'categories_id' => [$category->id],
-                        'genres_id' => [$genre->id],
-
                     ],
-                'test_data' => $this->sendData + ['opened' => true]
+                'test_data' => $testData + ['opened' => true]
             ],
             [
                 'send_data' => $this->sendData + [
                         'rating' => Video::RATING_LIST[1],
-                        'categories_id' => [$category->id],
-                        'genres_id' => [$genre->id],
                     ],
-                'test_data' => $this->sendData + ['rating' => Video::RATING_LIST[1]]
+                'test_data' => $testData + ['rating' => Video::RATING_LIST[1]]
             ],
         ];
 
@@ -213,9 +203,9 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
                 'updated_at'
             ]);
 
-            $this->assertHasCategory($response->json('id'), $category->id );
+            $this->assertHasCategory($response->json('id'), $value['send_data']['categories_id'][0] );
 
-            $this->assertHasGenre($response->json('id'), $genre->id );
+            $this->assertHasGenre($response->json('id'), $value['send_data']['genres_id'][0] );
 
             $response =$this->assertUpdate($value['send_data'] ,
                 $value['test_data'] + ['deleted_at'=> null]);
@@ -225,9 +215,9 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
                 'updated_at'
             ]);
 
-            $this->assertHasCategory($response->json('id'), $category->id );
+            $this->assertHasCategory($response->json('id'), $value['send_data']['categories_id'][0] );
 
-            $this->assertHasGenre($response->json('id'), $genre->id );
+            $this->assertHasGenre($response->json('id'), $value['send_data']['genres_id'][0] );
 
         }
 

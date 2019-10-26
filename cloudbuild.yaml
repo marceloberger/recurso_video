@@ -15,7 +15,7 @@ steps:
     name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
     args: ['-f','docker-compose.prod.yaml','up','-d']
     env:
-      - GOOGLE_CLOUD_PROJECT_ID=projeto-laravel-254010
+      - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
       - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
       - GOOGLE_CLOUD_STORAGE_BUCKET=app-micro-videos
       - GOOGLE_CLOUD_STORAGE_API_URI=https://storage.cloud.google.com/app-micro-videos
