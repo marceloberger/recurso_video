@@ -87,7 +87,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
 
         $this->assertResource($response, VideoResource::collection(collect([$this->video])));
 
-       //$this->assertIfFileUrlExists($this->video, $response);
+
     }
 
     public function testShow()
@@ -107,7 +107,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
 
         $this->assertResource($response, $resource);
 
-       //$this->assertIfFileUrlExists($this->video, $response);
+
 
 
     }

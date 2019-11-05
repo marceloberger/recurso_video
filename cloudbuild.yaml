@@ -2,6 +2,14 @@ steps:
 
   - id: "Gerando chave service-account "
     name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - kms
+      - decrypt
+      - --ciphertext-file=./backend/storage/credentials/google/service-account-storage.json.enc
+      - --plaintext-file=./backend/storage/credentials/google/service-account-storage.json
+      - --location=global
+      - --keyring=testing-lesson
+      - --key=service-account
 
 
   - id: "Rodando docker-compose"
