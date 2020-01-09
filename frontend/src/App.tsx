@@ -1,25 +1,30 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {Navbar} from "./components/Navbar";
+import {Box, CssBaseline, MuiThemeProvider} from "@material-ui/core";
+import {BrowserRouter} from "react-router-dom";
+import AppRouter from "./routes/AppRouter";
+import Breadcrumbs from "./components/Breadcrumbs";
+import theme from "./theme";
+import {SnackbarProvider} from "./components/SnackbarProvider";
+
 
 const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      
+      <React.Fragment>
+          <MuiThemeProvider theme={theme}>
+              <SnackbarProvider>
+                  <CssBaseline />
+                  <BrowserRouter>
+                      <Navbar />
+                      <Box paddingTop={'140px'}>
+                          <Breadcrumbs/>
+                          <AppRouter/>
+                      </Box>
+                  </BrowserRouter>
+              </SnackbarProvider>
+          </MuiThemeProvider>
+      </React.Fragment>
   );
 }
 
