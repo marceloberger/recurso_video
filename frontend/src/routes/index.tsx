@@ -3,8 +3,10 @@ import Dashboard from "../pages/Dashboard";
 import CategoryList from "../pages/category/PageList";
 import CastMemberList from "../pages/cast-member/PageList";
 import GenreList from "../pages/genre/PageList";
+import VideoList from "../pages/video/PageList";
 import MemberForm from "../pages/cast-member/PageForm";
 import GenreForm from "../pages/genre/PageForm";
+import VideoForm from "../pages/video/PageForm";
 import CategoryForm from "../pages/category/PageForm";
 
 
@@ -83,6 +85,27 @@ const routes:MyRouteProps[] = [
         label: 'Editar gêneros',
         path: '/genres/:id/edit',
         component: GenreForm,
+        exact: true
+    },
+    {
+        name: 'videos.list',
+        label: 'Listar video',
+        path: '/videos',
+        component: VideoList,
+        exact: true
+    },
+    {
+        name: 'videos.create',
+        label: 'Criar videos',
+        path: '/videos/create',
+        component: VideoForm,
+        exact: true
+    },
+    {
+        name: 'videos.edit',
+        label: 'Editar videos',
+        path: '/videos/:id/edit',
+        component: VideoForm,
         exact: true
     }
 

@@ -73,12 +73,12 @@ class VideoCrudTest extends BaseVideoTestCase
 
 
         $this->assertDatabaseHas(
-            'videos',
+            'video',
             $this->data + $this->fileFieldsData + ['opened' => false]);
 
         $video = Video::create($this->data + ['opened' => true]);
         $this->assertTrue($video->opened);
-        $this->assertDatabaseHas('videos', $this->data + ['opened' => true]);
+        $this->assertDatabaseHas('video', $this->data + ['opened' => true]);
 
 
     }
@@ -107,7 +107,7 @@ class VideoCrudTest extends BaseVideoTestCase
 
         $video->update($this->data + $this->fileFieldsData);
         $this->assertFalse($video->opened);
-        $this->assertDatabaseHas('videos', $this->data + $this->fileFieldsData + ['opened' => false]);
+        $this->assertDatabaseHas('video', $this->data + $this->fileFieldsData + ['opened' => false]);
 
         $video = factory(Video::class)->create(
             ['opened' => false]
@@ -116,7 +116,7 @@ class VideoCrudTest extends BaseVideoTestCase
         $video->update($this->data + $this->fileFieldsData + ['opened' => true]);
         $this->assertTrue($video->opened);
 
-        $this->assertDatabaseHas('videos', $this->data + $this->fileFieldsData + ['opened' => true]);
+        $this->assertDatabaseHas('video', $this->data + $this->fileFieldsData + ['opened' => true]);
 
 
     }
@@ -189,7 +189,7 @@ class VideoCrudTest extends BaseVideoTestCase
 
         }  catch ( QueryException $exception) {
 
-            $this->assertDatabaseHas( 'videos', [
+            $this->assertDatabaseHas( 'video', [
 
                 'title' => $oldTitle
             ]);

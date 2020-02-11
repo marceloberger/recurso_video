@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGenreVideoTable extends Migration
+class CastMemberVideo extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,13 @@ class CreateGenreVideoTable extends Migration
      */
     public function up()
     {
-        Schema::create('genre_video', function (Blueprint $table) {
-            $table->uuid('genre_id')->index();
-            $table->foreign('genre_id')->references('id')->on('genres');
+        Schema::create('cast_member_video', function (Blueprint $table) {
+
+            $table->uuid('cast_member_id')->index();
+            $table->foreign('cast_member_id')->references('id')->on('cast_members');
             $table->uuid('video_id')->index();
             $table->foreign('video_id')->references('id')->on('video');
-            $table->unique(['genre_id', 'video_id']);
+            $table->unique(['cast_member_id', 'video_id']);
         });
     }
 
@@ -29,6 +30,6 @@ class CreateGenreVideoTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('genre_video');
+        Schema::dropIfExists('cast_member_video');
     }
 }

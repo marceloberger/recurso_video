@@ -68,7 +68,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
     public function testIndex()
     {
 
-        $response = $this->get(route('videos.index'));
+        $response = $this->get(route('video.index'));
 
         $response
             ->assertStatus(200)
@@ -93,7 +93,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
     public function testShow()
     {
 
-        $response = $this->json('GET', route('videos.show', [ 'video' => $this->video->id]));
+        $response = $this->json('GET', route('video.show', [ 'video' => $this->video->id]));
 
         $response
             ->assertStatus(200)
@@ -337,7 +337,7 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
 
         $response = $this->json(
             'DELETE',
-            route('videos.destroy', ['video' => $this->video->id]));
+            route('video.destroy', ['video' => $this->video->id]));
 
         $response->assertStatus(204);
 
@@ -348,11 +348,11 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
 
     protected function routeStore() {
 
-        return route('videos.store');
+        return route('video.store');
     }
 
     protected function routeUpdate() {
-        return route('videos.update', ['video' => $this->video->id]);
+        return route('video.update', ['video' => $this->video->id]);
 
     }
 

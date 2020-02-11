@@ -8,7 +8,7 @@ interface DashboardProps {
 const Dashboard = (props: DashboardProps) => {
     return (
         <Page title="Dashboard">
-
+           teste
 
         </Page>
     );

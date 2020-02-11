@@ -146,11 +146,11 @@ class VideoControllerUploadTest extends BaseVideoControllerTestCase
 
     protected function routeStore() {
 
-        return route('videos.store');
+        return route('video.store');
     }
 
     protected function routeUpdate() {
-        return route('videos.update', ['video' => $this->video->id]);
+        return route('video.update', ['video' => $this->video->id]);
 
     }
 

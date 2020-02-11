@@ -122,6 +122,12 @@ const theme = createMuiTheme({
                 color: (palette!.primary as SimplePaletteColorOptions).main,
             }
 
+        },
+        MUIDataTableFilterList: {
+            root: {
+                marginBottom: '16px'
+            }
+
         }
 
 

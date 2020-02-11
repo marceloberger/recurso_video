@@ -23,4 +23,4 @@ Route::resource('genres', 'GenreController', ['except' => ['create', 'edit']]);
 
 Route::resource('cast_members', 'CastMemberController', ['except' => ['create', 'edit']]);
 
-Route::resource('videos', 'VideoController', ['except' => ['create', 'edit']]);
+Route::resource('video', 'VideoController', ['except' => ['create', 'edit']]);

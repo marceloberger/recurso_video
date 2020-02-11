@@ -4,11 +4,10 @@ import MUIDataTable, {MUIDataTableColumn, MUIDataTableOptions, MUIDataTableProps
 import {merge, omit, cloneDeep} from 'lodash';
 import {MuiThemeProvider, Theme, useMediaQuery, useTheme} from "@material-ui/core";
 import DebouncedTableSearch from "./DebouncedTableSearch";
+import {RefAttributes} from "react";
 
-export interface TableColumn extends MUIDataTableColumn {
-    width?:string
 
-}
+
 
 const makeDefaultOptions = (debouncedSearchTime?): MUIDataTableOptions => ({
     print: false,
@@ -62,14 +61,23 @@ const makeDefaultOptions = (debouncedSearchTime?): MUIDataTableOptions => ({
 
 });
 
-interface TableProps extends MUIDataTableProps {
+export interface TableColumn extends MUIDataTableColumn {
+    width?:string
+}
+
+export interface MuiDataTableRefComponent {
+    changePage: (page:number) => void;
+    changeRowsPerPage: (rowsPerPage:number) => void;
+}
+
+interface TableProps extends MUIDataTableProps, RefAttributes<MuiDataTableRefComponent> {
     columns:TableColumn[];
     loading?:boolean;
     debounceSearchTime?:number;
 }
 
 
-const Table:React.FC<TableProps> = (props) => {
+const Table = React.forwardRef<MuiDataTableRefComponent, TableProps>((props, ref) => {
 
     function extractMuiDataTableColumns(columns:TableColumn[]):MUIDataTableColumn[] {
         setColumnsWidth(columns);
@@ -102,7 +110,11 @@ const Table:React.FC<TableProps> = (props) => {
     }
 
     function getOriginalMuiDataTableProps() {
-        return omit(newProps, 'loading');
+        return  {
+            ...omit(newProps, 'loading'),
+            ref
+        }
+
     }
 
     const theme = cloneDeep<Theme>(useTheme());
@@ -125,6 +137,22 @@ const Table:React.FC<TableProps> = (props) => {
             <MUIDataTable {...originalProps} />
         </MuiThemeProvider>
     );
-};
+});
 
 export default Table;
+
+export function makeActionsStyles(column) {
+
+    return theme => {
+        const copyTheme = cloneDeep(theme);
+        const selector = `&[data-testid^="MuiDataTableBodyCell-${column}"]`;
+        (copyTheme.overrides as any).MUIDataTableBodyCell.root[selector] = {
+            paddingTop: '0px',
+            paddingBottom: '0px',
+        };
+
+        return copyTheme;
+
+
+    }
+}
