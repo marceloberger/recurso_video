@@ -2,7 +2,7 @@
 
 namespace App\ModelFilters;
 
-
+use Illuminate\Database\Eloquent\Builder;
 
 class CategoryFilter extends DefaultModelFilter
 {
@@ -17,4 +17,12 @@ class CategoryFilter extends DefaultModelFilter
     //public function sortByName() {
        //dd('adsdsds');
     //}
+
+    public function genres($genres) {
+        $id = explode(",", $genres);
+        $this->whereHas('genres', function (Builder $query) use($id) {
+            $query
+                ->whereIn('id', $id);
+        });
+    }
 }
