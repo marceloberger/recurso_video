@@ -1,10 +1,9 @@
 import * as React from 'react';
 
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import format from "date-fns/format";
 import parseISO from "date-fns/parseISO";
-import {CastMemberTypeMap, Category, Genre, ListResponse} from "../../util/models";
-import genreHttp from "../../util/http/genre-http";
+import {ListResponse, Video} from "../../util/models";
 import DefaultTable, {makeActionsStyles, MuiDataTableRefComponent, TableColumn} from "../../components/Table";
 import {useSnackbar} from "notistack";
 import {useRef} from "react";
@@ -13,60 +12,61 @@ import {IconButton, MuiThemeProvider} from "@material-ui/core";
 import {FilterResetButton} from "../../components/Table/FilterResetButton";
 import {Link} from "react-router-dom";
 import EditIcon from '@material-ui/icons/Edit';
-import * as yup from "../../util/vendor/yup";
-import {BadgeNo, BadgeYes} from "../../components/Badge";
-import categoryHttp from "../../util/http/category-http";
+
+import videoHttp from "../../util/http/video-http";
+import LoadingContext from "../../components/loading/LoadingContext";
+import DeleteDialog from "../../components/DeleteDialog";
+import useDeleteCollection from "../../hooks/useDeleteCollection";
 
 
 const columnsDefinitions:TableColumn[] = [
     {
         name: "id",
         label: "ID",
-        width: '30%',
+        width: '32%',
         options: {
             sort:false,
             filter: false,
         }
     },
     {
-        name: "name",
-        label: "Nome",
-        width: '23%',
+        name: "title",
+        label: "Titulo",
+        width: '20%',
         options: {
+            sort:false,
             filter: false,
         }
     },
     {
-        name: "is_active",
-        label: "Ativo?",
+        name: "genres",
+        label: "Gêneros",
+        width: '13%',
         options: {
-            filterOptions: {
-                names: ['Sim', 'Nāo']
-            },
-            customBodyRender(value, tableMeta, updateValue) {
+            sort:false,
+            filter: false,
+            customBodyRender: (value, tableMeta, updateValue) => {
 
-                return value ? <BadgeYes /> : <BadgeNo/>;
-
-            }
-        },
-        width: '4%'
-    },
-    {
-        name: "categories",
-        label: "Categorias",
-        width: '20%',
-        options: {
-            filterType: 'multiselect',
-            filterOptions: {
-                names: []
-            },
-            customBodyRender(value, tableMeta, updateValue) {
-
-                return value.map( (valor) => valor.name).join(',');
+                return value.map( (valor) => valor.name).join(', ');
 
             }
         }
     },
+    {
+        name: "categories",
+        label: "Categorias",
+        width: '13%',
+        options: {
+            sort:false,
+            filter: false,
+            customBodyRender: (value, tableMeta, updateValue) => {
+
+                return value.map( (valor) => valor.name).join(', ');
+
+            }
+        }
+    },
+
     {
         name: "created_at",
         label: "Criado em",
@@ -95,7 +95,7 @@ const columnsDefinitions:TableColumn[] = [
                     <IconButton
                         color={"secondary"}
                         component={Link}
-                        to={`/genres/${tableMeta.rowData[0]}/edit`}>
+                        to={`/videos/${tableMeta.rowData[0]}/edit`}>
 
                         <EditIcon/>
                     </IconButton>
@@ -119,10 +119,10 @@ const Table = () => {
 
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
-    const [data, setData] = useState<Genre[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [categories, setCategories] = useState<Category[]>();
+    const [data, setData] = useState<Video[]>([]);
+    const loading = useContext(LoadingContext);
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
+    const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection();
 
     const {
         columns,
@@ -137,78 +137,9 @@ const Table = () => {
         debounceTime: debounceTime,
         rowsPerPage,
         rowsPerPageOptions,
-        tableRef,
-        extraFilter: {
-            createValidationSchema: () => {
-
-                return yup.object().shape( {
-                    categories: yup.mixed()
-                        .nullable()
-                        .transform( value => {
-                            return !value || value === '' ? undefined : value.split(",");
-                        })
-                        .default(null)
-
-                });
-
-            },
-            formatSearchParams: (debouncedState) =>  {
-                return debouncedState.extraFilter ? {
-                    ...(
-                        debouncedState.extraFilter.categories &&
-                        { categories: debouncedState.extraFilter.categories.join(',')}
-                    )
-                } : undefined
-            },
-            getStateFromURL: (queryParams) =>  {
-                return {
-                    categories: queryParams.get('categories')
-                }
-
-
-            }
-        }
-
+        tableRef
     });
 
-    const indexColumnCategories = columns.findIndex(c  => c.name === 'categories');
-    const columnCategories = columns[indexColumnCategories];
-    const categoriesFilterValue = filterState.extraFilter && filterState.extraFilter.categories;
-    (columnCategories.options as any).filterList = categoriesFilterValue ? [...categoriesFilterValue] : [];
-
-    const serverSideFilterList = columns.map( column => []);
-    if(categoriesFilterValue) {
-        serverSideFilterList[indexColumnCategories] = categoriesFilterValue;
-    }
-
-
-    useEffect( () => {
-
-        let isSubscribed = true;
-
-        (async () => {
-            try {
-                const {data} = await categoryHttp.list( {queryParams: {all: ''}});
-
-                if(isSubscribed) {
-                    setCategories(data.data);
-                    (columnCategories.options as any).filterOptions.names = data.data.map( category => category.name);
-                }
-
-            } catch (error) {
-                console.log(error);
-
-                snackbar.enqueueSnackbar(
-                    'Nāo foi possível carregar as informaçoes',
-                    {variant: 'error'}
-                );
-            }
-
-
-        })();
-
-
-    }, []);
 
     useEffect( () => {
         subscribed.current = true;
@@ -223,33 +154,37 @@ const Table = () => {
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
         debouncedFilterState.order,
-        JSON.stringify(debouncedFilterState.extraFilter)
     ]);
+
+
 
     async function getData() {
 
-        setLoading(true);
+
 
         try {
 
-            const {data} = await  genreHttp.list<ListResponse<Genre>>( {
+            const {data} = await  videoHttp.list<ListResponse<Video>>( {
                 queryParams: {
                     search: filterManager.cleanSearchText(filterState.search),
                     page:filterState.pagination.page,
                     per_page:filterState.pagination.per_page,
                     sort: filterState.order.sort,
                     dir: filterState.order.dir,
-                    ...(
-                        debouncedFilterState.extraFilter &&
-                        debouncedFilterState.extraFilter.categories &&
-                        {categories: debouncedFilterState.extraFilter.categories.join(',')}
-                    )
+
                 }
             });
+
+
 
             if(subscribed.current) {
                 setData(data.data);
                 setTotalRecords(data.meta.total);
+
+                if(openDeleteDialog) {
+                    setOpenDeleteDialog(false);
+                }
+
 
             }
 
@@ -257,7 +192,7 @@ const Table = () => {
         } catch (error) {
             console.log(error);
 
-            if(genreHttp.isCancelledRequest(error)) {
+            if(videoHttp.isCancelledRequest(error)) {
                 return;
             }
             snackbar.enqueueSnackbar(
@@ -265,27 +200,69 @@ const Table = () => {
                 {variant: 'error'}
             );
 
-        } finally {
-            setLoading(false)
         }
 
 
     }
 
 
+    function deleteRows(confirmed:boolean) {
 
+        if(!confirmed) {
+            setOpenDeleteDialog(false);
+            return;
+        }
+
+        const ids = rowsToDelete
+            .data
+            .map( (value) => data[value.index].id)
+            .join(',');
+
+        videoHttp
+            .deleteCollection({ids})
+            .then( (response)  => {
+
+                snackbar.enqueueSnackbar(
+                    'Registros excluidos com sucesso',
+                    {variant: 'success'}
+                );
+
+                if( rowsToDelete.data.length === filterState.pagination.per_page &&
+                   filterState.pagination.page > 1) {
+
+                    const page = filterState.pagination.page - 2;
+
+                    filterManager.changePage(page);
+                } else {
+                    getData();
+                }
+
+             })
+            .catch( (error) => {
+                console.log(error);
+                snackbar.enqueueSnackbar(
+                    'Nāo foi possível excluir os registros',
+                    {variant: 'error'}
+                );
+
+            });
+
+
+
+
+    }
 
     return (
         <MuiThemeProvider theme={makeActionsStyles(columnsDefinitions.length -1)}>
+            <DeleteDialog open={openDeleteDialog} handleClose={deleteRows}/>
             <DefaultTable
-                title="Listagem de generos"
+                title="Listagem de videos"
                 columns={columns}
                 data={data}
                 loading={loading}
                 debounceSearchTime={debouncedSearchTime}
                 ref={tableRef}
                 options={{
-                    serverSideFilterList,
                     serverSide: true,
                     responsive:'scrollMaxHeight',
                     searchText : filterState.search as any,
@@ -293,13 +270,6 @@ const Table = () => {
                     rowsPerPage: filterState.pagination.per_page,
                     rowsPerPageOptions,
                     count: totalRecords,
-                    onFilterChange: (column, filterList, type) => {
-                    const columnIndex = columns.findIndex(c  => c.name === column)
-                    filterManager.changeExtraFilter( {
-                    [column]: filterList[columnIndex].length ? filterList[columnIndex] : null
-                })
-
-                },
                     customToolbar: () => (
                         <FilterResetButton
                             handleClick={ () => {
@@ -312,6 +282,11 @@ const Table = () => {
                     onChangeRowsPerPage: (perPage:number) => filterManager.changeRowsPerPage(perPage),
                     onColumnSortChange: (changedColumn:string, direction:string) =>
                         filterManager.changeColumnSort(changedColumn, direction),
+                    onRowsDelete: (rowsDeleted:any[]) => {
+                        setRowsToDelete(rowsDeleted as any);
+                        return false;
+
+                    }
                 }}
             />
         </MuiThemeProvider>

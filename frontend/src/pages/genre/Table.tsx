@@ -16,6 +16,8 @@ import EditIcon from '@material-ui/icons/Edit';
 import * as yup from "../../util/vendor/yup";
 import {BadgeNo, BadgeYes} from "../../components/Badge";
 import categoryHttp from "../../util/http/category-http";
+import {useContext} from "react";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 
 const columnsDefinitions:TableColumn[] = [
@@ -120,7 +122,7 @@ const Table = () => {
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<Genre[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
     const [categories, setCategories] = useState<Category[]>();
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
 
@@ -228,7 +230,7 @@ const Table = () => {
 
     async function getData() {
 
-        setLoading(true);
+
 
         try {
 
@@ -265,10 +267,7 @@ const Table = () => {
                 {variant: 'error'}
             );
 
-        } finally {
-            setLoading(false)
         }
-
 
     }
 

@@ -1,26 +1,33 @@
 // @flow
 import * as React from 'react';
 
-import {Autocomplete, AutocompleteProps} from "@material-ui/lab";
+import {Autocomplete, AutocompleteProps, UseAutocompleteSingleProps} from "@material-ui/lab";
 import {CircularProgress, TextField, TextFieldProps} from "@material-ui/core";
 import {useState} from "react";
 import {useEffect} from "react";
-import castMemberHttp from "../util/http/cast-member-http";
 import {useSnackbar} from "notistack";
+import {useDebounce} from "use-debounce";
+import {RefAttributes} from "react";
+import {useImperativeHandle} from "react";
 
-interface AsyncAutoCompleteProps  {
+interface AsyncAutoCompleteProps  extends RefAttributes< AsyncAutoCompleteComponent> {
     fetchOptions: (searchText) => Promise<any>
+    debounceTime?:number
     TextFieldProps?:TextFieldProps
-    AutocompleteProps?:Omit<AutocompleteProps<any>, 'renderInput'>
+    AutocompleteProps?:Omit<AutocompleteProps<any>, 'renderInput'> & UseAutocompleteSingleProps<any>
 
 };
-const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
-    const {AutocompleteProps} = props;
 
-    const {freeSolo, onOpen, onClose, onInputChange} = AutocompleteProps as any;
+export interface AsyncAutoCompleteComponent {
+    clear: () => void;
+}
+const AsyncAutoComplete = React.forwardRef<AsyncAutoCompleteComponent, AsyncAutoCompleteProps>( (props, ref ) => {
 
+    const {AutocompleteProps, debounceTime = 300} = props;
+    const {freeSolo = false, onOpen, onClose, onInputChange} = AutocompleteProps as any;
     const [open, setOpen] = useState(false);
     const [searchText, setSearchText] = useState("");
+    const [debouncedSearchText] = useDebounce(searchText, debounceTime);
     const [loading, setLoading] = useState(false);
     const [options, setOptions] = useState([]);
 
@@ -42,6 +49,7 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
         open,
         options,
         loading: loading,
+        inputValue: searchText,
         onOpen() {
            setOpen(true);
            onOpen && onOpen();
@@ -81,7 +89,7 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
 
     useEffect( () => {
 
-        if(!open || searchText === "" && freeSolo) {
+        if(!open || debouncedSearchText === "" && freeSolo) {
             return
         }
 
@@ -92,7 +100,7 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
             setLoading(true);
 
             try {
-                const data = await props.fetchOptions(searchText);
+                const data = await props.fetchOptions(debouncedSearchText);
                 if(isSubscribed) {
                     setOptions(data);
                 }
@@ -115,11 +123,21 @@ const AsyncAutoComplete: React.FC<AsyncAutoCompleteProps> = (props) => {
            isSubscribed = false;
        }
 
-    }, [freeSolo ? searchText: open]);
+    }, [freeSolo ? debouncedSearchText: open]);
+
+    useImperativeHandle( ref, () => ({
+        clear: () => {
+                setSearchText("");
+                setOptions([]);
+        }
+
+    }));
+
+
 
     return (
        <Autocomplete {...autocompleteProps}/>
     );
-};
+});
 
 export default AsyncAutoComplete;

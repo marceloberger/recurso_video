@@ -10,6 +10,8 @@ import {useHistory, useParams} from "react-router";
 import {Category, Genre} from "../../util/models";
 import SubmitActions from "../../components/SubmitActions";
 import {DefaultForm} from "../../components/DefaultForm";
+import {useContext} from "react";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 
 const validationSchema = yup.object().shape( {
@@ -40,7 +42,7 @@ export const Form = () => {
     const {id} = useParams();
     const [genre, setGenre] = useState<Genre | null>(null);
     const [ categories, setCategories] = useState<Category[]>( []);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
 
 
 
@@ -49,7 +51,7 @@ export const Form = () => {
         let isSubscribed = true;
 
         (async  () => {
-            setLoading(true);
+
             const promises = [ categoryHttp.list({queryParams: {all: ''}})];
 
             if(id) {
@@ -81,8 +83,6 @@ export const Form = () => {
                     {variant: 'error'}
                 );
 
-            } finally {
-                setLoading(false)
             }
 
         })();
@@ -104,7 +104,7 @@ export const Form = () => {
     }, [register]);
 
     async function onSubmit(formData, event) {
-        setLoading(true);
+
         try {
             const http = !genre
                 ?    genreHttp.create(formData)
@@ -138,8 +138,6 @@ export const Form = () => {
                 {variant: 'error'}
             );
 
-        } finally {
-            setLoading(false)
         }
 
 

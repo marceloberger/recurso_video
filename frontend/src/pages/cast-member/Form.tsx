@@ -18,6 +18,8 @@ import {useHistory, useParams} from "react-router";
 import {useState} from "react";
 import SubmitActions from "../../components/SubmitActions";
 import {DefaultForm} from "../../components/DefaultForm";
+import {useContext} from "react";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 
 
@@ -47,7 +49,7 @@ export const Form = () => {
     const history = useHistory();
     const {id} = useParams();
     const [castMember, setCastMember] = useState<{id:string} | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
 
 
 
@@ -58,7 +60,7 @@ export const Form = () => {
         }
 
         async  function getCastMember() {
-            setLoading(true);
+
 
             try {
                 const {data} = await  castMemberHttp.get(id);
@@ -73,8 +75,6 @@ export const Form = () => {
                     {variant: 'error'}
                 );
 
-            } finally {
-                setLoading(false)
             }
 
         }
@@ -91,7 +91,7 @@ export const Form = () => {
     }, [register]);
 
     async function onSubmit(formData, event) {
-        setLoading(true);
+
         try {
             const http = !castMember
                 ?   castMemberHttp.create(formData)
@@ -125,8 +125,6 @@ export const Form = () => {
                 {variant: 'error'}
             );
 
-        } finally {
-            setLoading(false)
         }
 
 

@@ -15,6 +15,8 @@ import {Link} from "react-router-dom";
 import EditIcon from '@material-ui/icons/Edit';
 import * as yup from "../../util/vendor/yup";
 import {invert} from 'lodash';
+import {useContext} from "react";
+import LoadingContext from "../../components/loading/LoadingContext";
 
 
 
@@ -104,7 +106,7 @@ const Table = () => {
     const snackbar = useSnackbar();
     const subscribed = useRef(true);
     const [data, setData] = useState<CastMember[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const loading = useContext(LoadingContext);
     const tableRef = useRef() as React.MutableRefObject<MuiDataTableRefComponent>;
 
     const {
@@ -184,7 +186,7 @@ const Table = () => {
 
     async function getData() {
 
-        setLoading(true);
+
 
         try {
 
@@ -221,8 +223,6 @@ const Table = () => {
                 {variant: 'error'}
             );
 
-        } finally {
-            setLoading(false)
         }
 
 

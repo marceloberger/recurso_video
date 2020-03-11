@@ -9,6 +9,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import {Location} from 'history';
 import routes from "../routes";
 import {Box, Container} from "@material-ui/core";
+import RouteParser from 'route-parser';
 
 
 
@@ -43,7 +44,7 @@ const LinkRouter = (props: LinkRouterProps) => <Link {...props} component={Route
 
 export default function Breadcrumbs() {
 
-
+    const classes = useStyles();
 
     function makeBreadcrumb(location:Location) {
 
@@ -57,13 +58,19 @@ export default function Breadcrumbs() {
                     const last = index === pathnames.length - 1;
                     const to = `${pathnames.slice(0, index + 1).join('/').replace('//', '/')}`;
 
+                    const route = Object.keys(breadcrumbNameMap).find( path => new RouteParser(path).match(to));
+
+                    if(route === undefined) {
+                        return false;
+                    }
+
                     return last ? (
                         <Typography color="textPrimary" key={to}>
-                            {breadcrumbNameMap[to]}
+                            {breadcrumbNameMap[route]}
                         </Typography>
                     ) : (
-                        <LinkRouter color="inherit" to={to} key={to}>
-                            {breadcrumbNameMap[to]}
+                        <LinkRouter color="inherit" to={to} key={to} className={classes.linkRouter}>
+                            {breadcrumbNameMap[route]}
                         </LinkRouter>
                     );
                 })
